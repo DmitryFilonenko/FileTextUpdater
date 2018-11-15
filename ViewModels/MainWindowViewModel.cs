@@ -55,6 +55,20 @@ namespace TextReplacerWpf.ViewModels
                 OnPropertyChanged();
             }
         }
+
+        Visibility _imageVisibility = Visibility.Hidden;
+
+        public Visibility ImageVisibility
+        {
+            get { return _imageVisibility; }
+            set
+            {
+                _imageVisibility = value;
+                OnPropertyChanged();
+            }
+        }
+
+
         #endregion
 
         #region ReplaceCommand
@@ -74,8 +88,15 @@ namespace TextReplacerWpf.ViewModels
         }
 
         private void Replace()
-        {
-            MessageBox.Show("Search - " + SearchText + " Replace - " + ReplaceText + " Pattern - " + PatternText);
+        {            
+            SearchText = "SearchText";
+            ReplaceText = "ReplaceText";
+            PatternText = "PatternText";
+
+            if (ImageVisibility == Visibility.Hidden)
+                ImageVisibility = Visibility.Visible;
+            else
+                ImageVisibility = Visibility.Hidden;
         }
         #endregion
     }
