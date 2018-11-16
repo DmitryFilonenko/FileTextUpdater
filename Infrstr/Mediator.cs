@@ -15,5 +15,8 @@ namespace TextReplacerWpf.Infrstr
 
         public static string PathToDir { get; set; }
         public static List<FileInfo> FilesList { get; set; }
+
+        static int _updatedFiles = 0;
+        public static int UpdatedFiles { get { return _updatedFiles; } set { _updatedFiles = value; } } 
     }
 }

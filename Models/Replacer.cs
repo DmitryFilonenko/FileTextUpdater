@@ -12,10 +12,13 @@ using TextReplacerWpf.Infrstr;
 
 namespace TextReplacerWpf.Models
 {
+    public enum CurrentTask { SearchFiles, ReplaceText, Cancel}
+
     public static class Replacer
     {
-        static public event Action TaskFinished;
+        static public event Action<CurrentTask> TaskFinished;
 
+        #region SearhFiles
         public static bool GetPathToDir()
         {
             bool res = false;
@@ -47,36 +50,43 @@ namespace TextReplacerWpf.Models
             DirectoryInfo di = new DirectoryInfo(Mediator.PathToDir);
             Mediator.FilesList = new List<FileInfo>(); 
             Mediator.FilesList = di.GetFiles(Mediator.Pattern, SearchOption.AllDirectories).ToList();
-            TaskFinished?.Invoke();
+            TaskFinished?.Invoke(CurrentTask.SearchFiles);
+        }
+        #endregion
+
+        #region ReplaceText
+
+        public static void ReplaceTextAsync()
+        {
+            var thread = new Thread(ReplaceText)
+            {
+                IsBackground = true
+            };
+            thread.Start();
         }
 
+        static void ReplaceText()
+        {
+            int count = 0;
+
+            foreach (var item in Mediator.FilesList)
+            {
+                string oldText = File.ReadAllText(item.FullName, Encoding.Default);
+                if (oldText.Contains(Mediator.Search))
+                {
+                    string newText = oldText.Replace(Mediator.Search, Mediator.Replace);
+                    File.WriteAllText(item.FullName, newText, Encoding.Default);
+                    count++;
+                }
+            }
+            Mediator.UpdatedFiles = count;
+            TaskFinished?.Invoke(CurrentTask.ReplaceText);
+        }
+
+        #endregion
 
 
 
 
-
-
-
-        //static Task<string> StrMethod()
-        //{
-        //    WebClient webClient = new WebClient();
-        //    Task<string> task = webClient.DownloadStringTaskAsync("http://habrahabr.ru/");
-        //    //task = webClient.DownloadStringTaskAsync("https://rozetka.com.ua/");
-        //    task = new WebClient().DownloadStringTaskAsync("https://appsrv.eadr.com.ua/");
-        //   // MessageBox.Show(Thread.CurrentThread.ManagedThreadId.ToString());
-        //    return task;
-        //}
-
-        //static Task<string> StrMethod___1()
-        //{
-        //    MessageBox.Show(Thread.CurrentThread.ManagedThreadId.ToString());
-        //    //Thread.Sleep(1000);
-        //    for (int i = 0; i < 1000; i++)
-        //    {
-        //        int res = i / i + 1;
-        //    }
-        //    MessageBox.Show(Thread.CurrentThread.ManagedThreadId.ToString());
-        //    return Task.FromResult<string>("Other");
-        //}
     }
 }

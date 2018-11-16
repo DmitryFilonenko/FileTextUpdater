@@ -37,6 +37,17 @@ namespace TextReplacerWpf.ViewModels
             }
         }
 
+        Visibility _isReplace = Visibility.Hidden;
+        public Visibility IsReplace
+        {
+            get { return _isReplace; }
+            set
+            {
+                _isReplace = value;
+                OnPropertyChanged();
+            }
+        }
+
         string _searchText;
         public string SearchText
         {
@@ -59,14 +70,25 @@ namespace TextReplacerWpf.ViewModels
             }
         }
 
-        string _patternText;
-
+        string _patternText = "*.*";
         public string PatternText
         {
             get { return _patternText; }
             set
             {
                 _patternText = value;
+                OnPropertyChanged();
+            }
+        }
+
+
+        string _beforeReplaceText;
+        public string BeforeReplaceText
+        {
+            get { return _beforeReplaceText; }
+            set
+            {
+                _beforeReplaceText = value;
                 OnPropertyChanged();
             }
         }
@@ -96,39 +118,75 @@ namespace TextReplacerWpf.ViewModels
         }
         #endregion
 
-        #region ReplaceCommand
-        ICommand _replaceCommand;
-        public ICommand ReplaceCommand
+        #region Commands
+
+        ICommand _buttonCommand;
+        public ICommand ButtonCommand
         {
             get
             {
-                if (_replaceCommand == null)
+                if (_buttonCommand == null)
                 {
-                    _replaceCommand = new RelayCommand(
+                    _buttonCommand = new RelayCommand(
                     p => true,
-                    p => Replace());
+                    p => SelectAction());
                 }
-                return _replaceCommand;
+                return _buttonCommand;
             }
         }
 
-        private void Replace()
+        private void SelectAction()
+        {
+            switch (ButtonText)
+            {
+                case "Select folder":
+                    Search();
+                    break;
+                case "Replace text":
+                    Replace();
+                    break;
+                default:
+                    Cancel();
+                    return;
+            }
+        }
+        #endregion
+
+        #region SearchFiles
+
+        private void Search()
         {
             Replacer.TaskFinished += Replacer_TaskFinished;
             InitMediator();
             bool isDirSelected = Replacer.GetPathToDir();
             if (isDirSelected)
-            {
-                IsSearch = Visibility.Hidden;
+            {                
                 ImageVisibility = Visibility.Visible;
                 Replacer.GetFilesAsync();
+                ButtonText = "Cancel";
             }            
         }
 
-        private void Replacer_TaskFinished()
+        private void Replacer_TaskFinished(CurrentTask currentTask)
         {
-            ImageVisibility = Visibility.Hidden;            
-            MessageBox.Show("Найдено файлов для замены - " + Mediator.FilesList.Count);
+            ImageVisibility = Visibility.Hidden;
+
+            switch (currentTask)
+            {
+                case CurrentTask.SearchFiles:
+                    BeforeReplaceText = "Files to replace - " + Mediator.FilesList.Count;
+                    ButtonText = "Replace text";
+                    IsSearch = Visibility.Hidden;
+                    IsReplace = Visibility.Visible;
+                    break;
+                case CurrentTask.ReplaceText:
+                    BeforeReplaceText = "Updated files - " + Mediator.UpdatedFiles;
+                    ButtonText = "";
+                    break;
+                default:
+                    break;
+            }
+
         }
 
         private void InitMediator()
@@ -136,6 +194,24 @@ namespace TextReplacerWpf.ViewModels
             Mediator.Search = SearchText;
             Mediator.Replace = ReplaceText;
             Mediator.Pattern = PatternText;
+        }
+        #endregion
+
+        #region ReplaceText
+
+        private void Replace()
+        {
+            InitMediator();
+            ImageVisibility = Visibility.Visible;
+            Replacer.ReplaceTextAsync();
+            ButtonText = "Cancel";
+        }
+        #endregion
+
+        #region Cancel
+        void Cancel()
+        {
+            MessageBox.Show("Cancel!");
         }
         #endregion
     }
