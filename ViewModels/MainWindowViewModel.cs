@@ -4,9 +4,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using TextReplacerWpf.Infrstr;
+using TextReplacerWpf.Models;
 
 namespace TextReplacerWpf.ViewModels
 {
@@ -22,6 +25,18 @@ namespace TextReplacerWpf.ViewModels
         }
 
         #region Prorerties
+
+        Visibility _isSerch = Visibility.Visible;
+        public Visibility IsSearch
+        {
+            get { return _isSerch; }
+            set
+            {
+                _isSerch = value;
+                OnPropertyChanged();
+            }
+        }
+
         string _searchText;
         public string SearchText
         {
@@ -56,6 +71,18 @@ namespace TextReplacerWpf.ViewModels
             }
         }
 
+        string _buttonText = "Select folder";
+
+        public string ButtonText
+        {
+            get { return _buttonText; }
+            set
+            {
+                _buttonText = value;
+                OnPropertyChanged();
+            }
+        }
+
         Visibility _imageVisibility = Visibility.Hidden;
 
         public Visibility ImageVisibility
@@ -67,8 +94,6 @@ namespace TextReplacerWpf.ViewModels
                 OnPropertyChanged();
             }
         }
-
-
         #endregion
 
         #region ReplaceCommand
@@ -88,15 +113,29 @@ namespace TextReplacerWpf.ViewModels
         }
 
         private void Replace()
-        {            
-            SearchText = "SearchText";
-            ReplaceText = "ReplaceText";
-            PatternText = "PatternText";
-
-            if (ImageVisibility == Visibility.Hidden)
+        {
+            Replacer.TaskFinished += Replacer_TaskFinished;
+            InitMediator();
+            bool isDirSelected = Replacer.GetPathToDir();
+            if (isDirSelected)
+            {
+                IsSearch = Visibility.Hidden;
                 ImageVisibility = Visibility.Visible;
-            else
-                ImageVisibility = Visibility.Hidden;
+                Replacer.GetFilesAsync();
+            }            
+        }
+
+        private void Replacer_TaskFinished()
+        {
+            ImageVisibility = Visibility.Hidden;            
+            MessageBox.Show("Найдено файлов для замены - " + Mediator.FilesList.Count);
+        }
+
+        private void InitMediator()
+        {
+            Mediator.Search = SearchText;
+            Mediator.Replace = ReplaceText;
+            Mediator.Pattern = PatternText;
         }
         #endregion
     }

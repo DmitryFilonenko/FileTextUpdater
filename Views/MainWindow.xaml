@@ -41,9 +41,9 @@
 
 
             <Image Panel.ZIndex="1" Visibility="{Binding Path=ImageVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Grid.RowSpan="4" gif:ImageBehavior.AnimatedSource="pack://application:,,,/Img/Load.gif" />
-            
-            <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontFamily="Calibri" FontSize="16">Text for search:</Label>
-            <TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Path=SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,10,10" BorderBrush="Gray" BorderThickness="1" Width="300" Height="36" FontFamily="Calibri" FontSize="16"> </TextBox>
+
+            <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Visibility="{Binding Path=IsReplace, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontFamily="Calibri" FontSize="16">Text for search:</Label>
+            <TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Visibility="{Binding Path=IsReplace, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Text="{Binding Path=SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Left" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,10,10" BorderBrush="Gray" BorderThickness="1" Width="300" Height="36" FontFamily="Calibri" FontSize="16"> </TextBox>
 
             <Separator Grid.Row="3" Grid.ColumnSpan="5" />
             <Separator Grid.Row="6" Grid.ColumnSpan="5" />
@@ -51,13 +51,13 @@
                 <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
             </StackPanel>
 
-            <Label Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontFamily="Calibri" FontSize="16">Text for replace:</Label>
-            <TextBox Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="2" Text="{Binding Path=ReplaceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,10,10" BorderBrush="Gray" BorderThickness="1" Width="300" Height="36" FontFamily="Calibri" FontSize="16"></TextBox>
+            <Label Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" Visibility="{Binding Path=IsReplace, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontFamily="Calibri" FontSize="16">Text for replace:</Label>
+            <TextBox Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="2" Visibility="{Binding Path=IsReplace, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Text="{Binding Path=ReplaceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Left" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,10,10" BorderBrush="Gray" BorderThickness="1" Width="300" Height="36" FontFamily="Calibri" FontSize="16"></TextBox>
 
-            <Label Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontFamily="Calibri" FontSize="16">Patter for file search:</Label>
-            <TextBox Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Path=PatternText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,10,10" BorderBrush="Gray" BorderThickness="1" Width="300" Height="36" FontFamily="Calibri" FontSize="16"></TextBox>
+            <Label Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Visibility="{Binding Path=IsSearch, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontFamily="Calibri" FontSize="16">Pattern for file search:</Label>
+            <TextBox Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Visibility="{Binding Path=IsSearch, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Text="{Binding Path=PatternText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Left" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,10,10" BorderBrush="Gray" BorderThickness="1" Width="300" Height="36" FontFamily="Calibri" FontSize="16"></TextBox>
 
-            <Button Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3" Command="{Binding ReplaceCommand}" Margin="10,20,10,0" FontFamily="Calibri" FontSize="16">Select folder</Button>
+            <Button Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3" Content="{Binding Path=ButtonText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Command="{Binding ReplaceCommand}" Margin="10,20,10,0" FontFamily="Calibri" FontSize="16"></Button>
         
         </Grid>
     </Border>
