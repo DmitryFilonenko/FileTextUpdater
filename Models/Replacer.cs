@@ -37,20 +37,37 @@ namespace TextReplacerWpf.Models
         }
 
         public static void GetFilesAsync()
-        {            
-            var thread = new Thread(GetFiles)
-            {
-                IsBackground = true
-            };
-            thread.Start();
+        {
+            Task.Run(() => GetFiles(Mediator.PathToDir));
         }
 
-        static void GetFiles()
+
+        static void GetFiles(string folder)
         {
-            DirectoryInfo di = new DirectoryInfo(Mediator.PathToDir);
-            Mediator.FilesList = new List<FileInfo>(); 
-            Mediator.FilesList = di.GetFiles(Mediator.Pattern, SearchOption.AllDirectories).ToList();
+            Mediator.AsyncThread = Thread.CurrentThread;
+            Mediator.FilesList = new List<string>();
+            GetFilesRecurs(folder);
             TaskFinished?.Invoke(CurrentTask.SearchFiles);
+        }
+
+
+        static void GetFilesRecurs(string folder)
+        {   
+            foreach (string file in Directory.GetFiles(folder, Mediator.Pattern))
+            {
+                Mediator.FilesList.Add(file);
+            }
+            foreach (string subDir in Directory.GetDirectories(folder))
+            {
+                try
+                {
+                    GetFilesRecurs(subDir);
+                }
+                catch
+                {
+                    
+                }
+            }            
         }
         #endregion
 
@@ -71,11 +88,11 @@ namespace TextReplacerWpf.Models
 
             foreach (var item in Mediator.FilesList)
             {
-                string oldText = File.ReadAllText(item.FullName, Encoding.Default);
+                string oldText = File.ReadAllText(item, Encoding.Default);
                 if (oldText.Contains(Mediator.Search))
                 {
                     string newText = oldText.Replace(Mediator.Search, Mediator.Replace);
-                    File.WriteAllText(item.FullName, newText, Encoding.Default);
+                    File.WriteAllText(item, newText, Encoding.Default);
                     count++;
                 }
             }

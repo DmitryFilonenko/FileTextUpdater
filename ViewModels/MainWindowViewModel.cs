@@ -17,7 +17,8 @@ namespace TextReplacerWpf.ViewModels
 
     {
         public event PropertyChangedEventHandler PropertyChanged;
-    
+        event Action CancelByUser;
+        public enum State { BeforeSearch, Search, AfterSearch, Replace, Done, Cancel}
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -82,13 +83,13 @@ namespace TextReplacerWpf.ViewModels
         }
 
 
-        string _beforeReplaceText;
-        public string BeforeReplaceText
+        string _currentText;
+        public string CurrentText
         {
-            get { return _beforeReplaceText; }
+            get { return _currentText; }
             set
             {
-                _beforeReplaceText = value;
+                _currentText = value;
                 OnPropertyChanged();
             }
         }
@@ -145,6 +146,9 @@ namespace TextReplacerWpf.ViewModels
                 case "Replace text":
                     Replace();
                     break;
+                case "Next search":
+                    SetState(State.BeforeSearch);
+                    break;
                 default:
                     Cancel();
                     return;
@@ -154,39 +158,94 @@ namespace TextReplacerWpf.ViewModels
 
         #region SearchFiles
 
-        private void Search()
+        private void SetState(State state)
         {
+            switch (state)
+            {            
+                case State.BeforeSearch:
+                    ImageVisibility = Visibility.Hidden;
+                    IsSearch = Visibility.Visible;
+                    IsReplace = Visibility.Hidden;
+                    ButtonText = "Select folder";
+                    SearchText = "";
+                    ReplaceText = "";
+                    PatternText = "*.*";
+                    break;
+                case State.Search:
+                    ImageVisibility = Visibility.Visible;
+                    IsSearch = Visibility.Visible;
+                    IsReplace = Visibility.Hidden;
+                    ButtonText = "Cancel";
+                    break;
+                case State.AfterSearch:
+                    ImageVisibility = Visibility.Hidden;
+                    IsSearch = Visibility.Hidden;
+                    IsReplace = Visibility.Visible;
+                    CurrentText = "Files to replace - " + Mediator.FilesList.Count;
+                    ButtonText = "Replace text";
+                    break;
+                case State.Replace:
+                    ImageVisibility = Visibility.Visible;                    
+                    IsSearch = Visibility.Hidden;
+                    IsReplace = Visibility.Visible;
+                    CurrentText = "Files to replace - " + Mediator.FilesList.Count;
+                    ButtonText = "Cancel";
+                    break;
+                case State.Cancel:
+                    ImageVisibility = Visibility.Hidden;
+                    IsSearch = Visibility.Hidden;
+                    IsReplace = Visibility.Visible;
+                    CurrentText = "Canceled by user.";
+                    ButtonText = "Next search";
+                    break;
+                case State.Done:
+                    ImageVisibility = Visibility.Hidden;
+                    IsSearch = Visibility.Hidden;
+                    IsReplace = Visibility.Visible;
+                    CurrentText = "Updated " + Mediator.UpdatedFiles + " files";
+                    ButtonText = "Next search";
+                    break;
+            }
+        }
+
+        private void Search()
+        {            
             Replacer.TaskFinished += Replacer_TaskFinished;
+            CancelByUser += MainWindowViewModel_CancelByUser;
             InitMediator();
+            
             bool isDirSelected = Replacer.GetPathToDir();
             if (isDirSelected)
-            {                
-                ImageVisibility = Visibility.Visible;
-                Replacer.GetFilesAsync();
-                ButtonText = "Cancel";
+            {
+                SetState(State.Search);
+                Replacer.GetFilesAsync();                
             }            
+        }
+
+        private void MainWindowViewModel_CancelByUser()
+        {
+            if (Mediator.AsyncThread != null)
+            {
+                Mediator.AsyncThread.Abort();
+                SetState(State.Cancel);                
+            }
         }
 
         private void Replacer_TaskFinished(CurrentTask currentTask)
         {
-            ImageVisibility = Visibility.Hidden;
+            SetState(State.Done);            
 
             switch (currentTask)
             {
                 case CurrentTask.SearchFiles:
-                    BeforeReplaceText = "Files to replace - " + Mediator.FilesList.Count;
-                    ButtonText = "Replace text";
-                    IsSearch = Visibility.Hidden;
-                    IsReplace = Visibility.Visible;
+                    SetState(State.AfterSearch);                    
                     break;
                 case CurrentTask.ReplaceText:
-                    BeforeReplaceText = "Updated files - " + Mediator.UpdatedFiles;
-                    ButtonText = "";
+                    SetState(State.Done);                    
                     break;
-                default:
+                default:                    
                     break;
             }
-
         }
 
         private void InitMediator()
@@ -198,11 +257,10 @@ namespace TextReplacerWpf.ViewModels
         #endregion
 
         #region ReplaceText
-
         private void Replace()
         {
             InitMediator();
-            ImageVisibility = Visibility.Visible;
+            SetState(State.Replace);
             Replacer.ReplaceTextAsync();
             ButtonText = "Cancel";
         }
@@ -211,7 +269,7 @@ namespace TextReplacerWpf.ViewModels
         #region Cancel
         void Cancel()
         {
-            MessageBox.Show("Cancel!");
+            CancelByUser?.Invoke();
         }
         #endregion
     }
